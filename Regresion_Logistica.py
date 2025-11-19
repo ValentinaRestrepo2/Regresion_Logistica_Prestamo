@@ -2,14 +2,14 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn import metrics
-from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+from sklearn.metrics import classification_report, confusion_matrix
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 
 df = pd.read_csv('Loan_Eligibility_1200.csv')
 df.describe()
-
+print(df.columns)
 nuevas_columnas = [
     'ID_Cliente', 'Genero', 'Casado', 'Dependientes', 'Educacion', 'Independiente',
     'Ingreso_Solicitante', 'Ingreso_CoSolicitante', 'Monto_Prestamo',
@@ -37,6 +37,7 @@ df['Estado_Prestamo'] = df['Estado_Prestamo'].map({'Y': 1, 'N': 0})
 # Urban -> 2, Semiurban -> 1, Rural -> 0
 df['Zona_Propiedad'] = df['Zona_Propiedad'].map({'Urban': 2, 'Semiurban': 1, 'Rural': 0})
 
+print(df.shape)
 # Validar valores nulos
 print(df.isna().sum())
 
@@ -45,7 +46,8 @@ X = df.drop('Estado_Prestamo', axis=1)
 y = df['Estado_Prestamo']
 
 # División del dataset en entrenamiento y prueba
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+X_test.count()
 
 # Entrenamiento del modelo
 modelo = LogisticRegression(max_iter=1000) # max_iter aumentado para asegurar convergencia
@@ -56,18 +58,24 @@ y_pred = modelo.predict(X_test)
 
 # Medidas
 #Accurary (Exactitud)
-print(f"Accuracy: {accuracy_score(y_test, y_pred):.2f}")
+print(f"Accuracy: {metrics.accuracy_score(y_test, y_pred):.2f}")
 #Presicion (Presición)
-print(f"Presición: {precision_score(y_test, y_pred):.2f}")
+print(f"Presición: {metrics.precision_score(y_test, y_pred):.2f}")
 #Recall (Exhaustividad)
-print(f"Recall: {recall_score(y_test, y_pred):.2f}")
+print(f"Recall: {metrics.recall_score(y_test, y_pred):.2f}")
 #F1 Score
-print(f"F1 Score: {f1_score(y_test, y_pred):.2f}")
+print(f"F1 Score: {metrics.f1_score(y_test, y_pred):.2f}")
 
 
 print("\n--- Matriz de Confusión ---")
 cm = confusion_matrix(y_test, y_pred)
 print(cm)
+
+print (modelo.coef_)
+print (modelo.intercept_)
+ce=modelo.coef_[0]
+print(f"h(x) = {modelo.intercept_[0]} + {ce[0]} X1 + {ce[1]} X2 + {ce[3]} X3 + {ce[4]} X4 + {ce[3]} X5")
+print("Salida final g(h(x))  ---    1 / (1 + e(-z))")
 
 # Visualización de la matriz de confusión
 etiquetas = ['No le presta', 'Si le presta']
