@@ -1,11 +1,14 @@
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
+from sklearn import metrics
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
 
 df = pd.read_csv('Loan_Eligibility_1200.csv')
+df.describe()
 
 nuevas_columnas = [
     'ID_Cliente', 'Genero', 'Casado', 'Dependientes', 'Educacion', 'Independiente',
@@ -42,7 +45,7 @@ X = df.drop('Estado_Prestamo', axis=1)
 y = df['Estado_Prestamo']
 
 # División del dataset en entrenamiento y prueba
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
 
 # Entrenamiento del modelo
 modelo = LogisticRegression(max_iter=1000) # max_iter aumentado para asegurar convergencia
@@ -51,8 +54,16 @@ modelo.fit(X_train, y_train)
 # Realizar predicciones
 y_pred = modelo.predict(X_test)
 
-# Evaluación del modelo
-print(f"Accuracy- Precisión del Modelo: {accuracy_score(y_test, y_pred):.2f}")
+# Medidas
+#Accurary (Exactitud)
+print(f"Accuracy: {accuracy_score(y_test, y_pred):.2f}")
+#Presicion (Presición)
+print(f"Presición: {precision_score(y_test, y_pred):.2f}")
+#Recall (Exhaustividad)
+print(f"Recall: {recall_score(y_test, y_pred):.2f}")
+#F1 Score
+print(f"F1 Score: {f1_score(y_test, y_pred):.2f}")
+
 
 print("\n--- Matriz de Confusión ---")
 cm = confusion_matrix(y_test, y_pred)
