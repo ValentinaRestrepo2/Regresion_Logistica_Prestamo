@@ -2,91 +2,115 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn import metrics
-from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.metrics import confusion_matrix, classification_report
 import matplotlib.pyplot as plt
-import numpy as np
 import seaborn as sns
+import warnings
 
-df = pd.read_csv('Loan_Eligibility_1200.csv')
-df.describe()
-print(df.columns)
-nuevas_columnas = [
-    'ID_Cliente', 'Genero', 'Casado', 'Dependientes', 'Educacion', 'Independiente',
-    'Ingreso_Solicitante', 'Ingreso_CoSolicitante', 'Monto_Prestamo',
-    'Plazo_Prestamo', 'Historial_Credito', 'Zona_Propiedad', 'Estado_Prestamo'
-]
-df.columns = nuevas_columnas
+warnings.filterwarnings('ignore')
 
-print("--- Información del Dataset ---")
-print(df.info())
-print(df.head())
-
+# Carga de Datos - Dataset
+nombre_archivo = "Loan_Eligibility_1200.csv"
+try:
+    df = pd.read_csv(nombre_archivo)
+except FileNotFoundError:
+    print(f"Error: No se encontró el archivo '{nombre_archivo}'")
+    exit()
+    
+nuevos_nombres = {
+    'Gender': 'Genero',
+    'Married': 'Casado',
+    'Dependents': 'Dependientes',
+    'Education': 'Educacion',
+    'Self_Employed': 'Autoempleado',
+    'Applicant_Income': 'Ingreso_Solicitante',
+    'Coapplicant_Income': 'Ingreso_CoSolicitante',
+    'Loan_Amount': 'Monto_Prestamo',
+    'Loan_Amount_Term': 'Plazo_Prestamo',
+    'Credit_History': 'Historial_Credito',
+    'Property_Area': 'Area_Propiedad',
+    'Loan_Status': 'Estado_Prestamo'
+}
 # Limpieza y Transformación de Datos
-df = df.drop('ID_Cliente', axis=1)
-# Genero: Male -> 1, Female -> 0
-df['Genero'] = df['Genero'].map({'Male': 1, 'Female': 0})
-# Casado: Yes -> 1, No -> 0
-df['Casado'] = df['Casado'].map({'Yes': 1, 'No': 0})
-# Educacion: Graduate -> 1, Not Graduate -> 0
-df['Educacion'] = df['Educacion'].map({'Graduate': 1, 'Not Graduate': 0})
-# Independiente: Yes -> 1, No -> 0
-df['Independiente'] = df['Independiente'].map({'Yes': 1, 'No': 0})
-# Estado_Prestamo (Variable Objetivo): Y -> 1, N -> 0
-df['Estado_Prestamo'] = df['Estado_Prestamo'].map({'Y': 1, 'N': 0})
-# Zona_Propiedad: Asignamos valores numéricos arbitrarios para poder procesarlos
-# Urban -> 2, Semiurban -> 1, Rural -> 0
-df['Zona_Propiedad'] = df['Zona_Propiedad'].map({'Urban': 2, 'Semiurban': 1, 'Rural': 0})
+if 'Customer_ID' in df.columns:
+    df = df.drop('Customer_ID', axis=1)
 
-print(df.shape)
-# Validar valores nulos
-print(df.isna().sum())
+df = df.rename(columns=nuevos_nombres)
+print(df.columns.tolist())
+
+if 'Dependientes' in df.columns:
+    df['Dependientes'] = df['Dependientes'].replace('3+', '3').astype(float)
+
+mappings = {
+    'Estado_Prestamo': {'Y': 1, 'N': 0},
+    'Genero': {'Male': 1, 'Female': 0},
+    'Casado': {'Yes': 1, 'No': 0},
+    'Educacion': {'Graduate': 1, 'Not Graduate': 0},
+    'Autoempleado': {'Yes': 1, 'No': 0}
+}
+
+for col, mapping in mappings.items():
+    if col in df.columns:
+        df[col] = df[col].map(mapping)
+
+# One-Hot Encoding para Area_Propiedad, esto creará columnas como 'Area_Propiedad_Semiurban'
+df = pd.get_dummies(df, columns=['Area_Propiedad'], drop_first=True)
+
+df = df.dropna().astype(float)
 
 # Definición de variables X (Predictoras) e y (Objetivo)
 X = df.drop('Estado_Prestamo', axis=1)
 y = df['Estado_Prestamo']
 
+nombres_columnas = X.columns.tolist()
+
 # División del dataset en entrenamiento y prueba
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-X_test.count()
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
 
 # Entrenamiento del modelo
-modelo = LogisticRegression(max_iter=1000) # max_iter aumentado para asegurar convergencia
+modelo = LogisticRegression(max_iter=10000)
 modelo.fit(X_train, y_train)
 
 # Realizar predicciones
 y_pred = modelo.predict(X_test)
 
-# Medidas
-#Accurary (Exactitud)
-print(f"Accuracy: {metrics.accuracy_score(y_test, y_pred):.2f}")
-#Presicion (Presición)
-print(f"Presición: {metrics.precision_score(y_test, y_pred):.2f}")
-#Recall (Exhaustividad)
-print(f"Recall: {metrics.recall_score(y_test, y_pred):.2f}")
-#F1 Score
-print(f"F1 Score: {metrics.f1_score(y_test, y_pred):.2f}")
+# Intercepto y Coeficientes
+intercepto = modelo.intercept_[0]
+ce = modelo.coef_[0]
 
+print("\n--- Ecuación del Modelo ---")
+ecuacion_str = f"h(x) = {intercepto:.4f}"
+for i, nombre in enumerate(nombres_columnas):
+    signo = "+" if ce[i] >= 0 else "-" 
+    valor_abs = abs(ce[i])
+    ecuacion_str += f" {signo} ({valor_abs:.4f} * {nombre})"
 
-print("\n--- Matriz de Confusión ---")
+print(ecuacion_str)
+print("\nSalida final g(h(x)) --- 1 / (1 + e(-z))")
+
+# Matriz de confusión
+y_pred = modelo.predict(X_test)
 cm = confusion_matrix(y_test, y_pred)
-print(cm)
-
-print (modelo.coef_)
-print (modelo.intercept_)
-ce=modelo.coef_[0]
-print(f"h(x) = {modelo.intercept_[0]} + {ce[0]} X1 + {ce[1]} X2 + {ce[3]} X3 + {ce[4]} X4 + {ce[3]} X5")
-print("Salida final g(h(x))  ---    1 / (1 + e(-z))")
-
-# Visualización de la matriz de confusión
 etiquetas = ['No le presta', 'Si le presta']
+
 plt.figure(figsize=(6,4))
 sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
-            xticklabels=etiquetas, 
-            yticklabels=etiquetas)
+            xticklabels=etiquetas, yticklabels=etiquetas)
 plt.title('Matriz de Confusión')
 plt.ylabel('Real')
-plt.xlabel('Predicción')
-plt.savefig('confusion_matrix_loan.png')
+plt.xlabel('Predicho')
+plt.show()
 
 print("\n--- Reporte de Clasificación ---")
 print(classification_report(y_test, y_pred, target_names=etiquetas))
+ 
+#Medidas
+
+#Accurary (Exactitud)
+print (metrics.accuracy_score(y_test,y_pred))
+#Presicion (Presición)
+print (metrics.precision_score(y_test,y_pred))
+#Recall (Exhaustividad)
+print (metrics.recall_score(y_test,y_pred))
+#F1 Score
+print (metrics.f1_score(y_test,y_pred))
