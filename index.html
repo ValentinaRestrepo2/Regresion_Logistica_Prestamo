@@ -148,6 +148,10 @@
         color: #991b1b;
         border: 2px solid #f87171;
       }
+      .icon-label {
+        margin-right: 5px;
+        color: var(--primary-color);
+      }
 
       @keyframes fadeIn {
         from {
@@ -158,6 +162,7 @@
           opacity: 1;
           transform: translateY(0);
         }
+        
       }
     </style>
   </head>
@@ -171,7 +176,7 @@
       <form id="loanForm">
         <div class="form-group">
           <label
-            ><i class="bi bi-newspaper"></i> ¿Tiene historial de Crédito?
+            ><i class="bi bi-newspaper icon-label"></i> ¿Tiene historial de Crédito?
             <span class="badge badge-neg">*</span></label
           >
           <select id="historial_credito" required>
@@ -185,7 +190,7 @@
 
         <div class="form-group">
           <label
-            ><i class="bi bi-house-door-fill"></i> ¿Qué tipo de propiedad posee?
+            ><i class="bi bi-house-door-fill icon-label"></i> ¿Qué tipo de propiedad posee?
             <span class="badge badge-neg">*</span></label
           >
           <select id="area_propiedad" required>
@@ -200,7 +205,7 @@
 
         <div class="form-group">
           <label
-            ><i class="bi bi-person-heart"></i> ¿Cuál es su estado civil?<span
+            ><i class="bi bi-person-heart icon-label"></i> ¿Cuál es su estado civil?<span
               class="badge badge-neg"
               >*</span
             ></label
@@ -216,7 +221,7 @@
 
         <div class="form-group">
           <label
-            ><i class="bi bi-person-badge"></i> ¿Es empleado independiente?
+            ><i class="bi bi-person-badge icon-label"></i> ¿Es empleado independiente?
             <span class="badge badge-neg">*</span></label
           >
           <select id="autoempleado" required>
@@ -230,7 +235,7 @@
 
         <div class="form-group">
           <label
-            ><i class="bi bi-mortarboard"></i> Nivel Educativo: ¿Es usted
+            ><i class="bi bi-mortarboard icon-label"></i> Nivel Educativo: ¿Es usted
             graduado? <span class="badge badge-neg">*</span></label
           >
           <select id="educacion" required>
@@ -244,7 +249,7 @@
 
         <div class="form-group">
           <label
-            ><i class="bi bi-gender-ambiguous"></i> Género
+            ><i class="bi bi-gender-ambiguous icon-label"></i> Género
             <span class="badge badge-neg">*</span></label
           >
           <select id="genero" required>
@@ -258,7 +263,7 @@
 
         <div class="form-group">
           <label
-            ><i class="bi bi-people-fill"></i> ¿Cuántas personas dependen
+            ><i class="bi bi-people-fill icon-label"></i> ¿Cuántas personas dependen
             económicamente de usted?
             <span class="badge badge-neg">*</span></label
           >
@@ -272,23 +277,23 @@
           />
         </div>
         <div class="form-group">
-          <label>Plazo del Préstamo (Meses)</label>
-          <input type="number" id="plazo" placeholder="Ej: 12, 24, 36" required />
+          <label><i class="bi bi-calendar4-week icon-label"></i> Plazo del Préstamo (Meses)</label>
+          <input type="number" id="plazo" placeholder="Ej: 12, 24, 36..." required />
         </div>
 
         <div class="form-group">
-          <label>Monto Solicitado</label>
-          <input type="number" id="monto" placeholder="Ej: $ 132000000" required />
+          <label><i class="bi bi-cash-coin icon-label"></i> Monto Solicitado (USD - Miles)</label>
+          <input type="number" id="monto" placeholder="Ej: $150 (para 150k USD)" required />
         </div>
 
         <div class="form-group">
-          <label>Ingreso del Solicitante</label>
-          <input type="number" id="ingreso_solicitante" placeholder="Ej: $ 2000000" required />
+          <label><i class="bi bi-coin icon-label"></i> ¿Cuánto son sus ingresos mensuales?</label>
+          <input type="number" id="ingreso_solicitante" placeholder="Ej: 5000" required />
         </div>
 
         <div class="form-group">
-          <label>Ingreso del Co-Solicitante</label>
-          <input type="number" id="ingreso_co_solicitante" placeholder="Ej: $ 2600000" required />
+          <label><i class="bi bi-coin icon-label"></i> ¿Cuánto son los ingresos mensuales del Co-Solicitante?</label>
+          <input type="number" id="ingreso_co_solicitante" placeholder="Ej: 0" required />
         </div>
         <button type="button" onclick="calcularPrestamo()">
           Evaluar Solicitud
@@ -312,52 +317,41 @@
         const elEdu = document.getElementById("educacion");
         const elGenero = document.getElementById("genero");
         const elDep = document.getElementById("dependientes");
-        const elplazo = document.getElementById("plazo").value;
-        const elmonto = document.getElementById("monto").value;
-        const elingresoSolicitante = document.getElementById(
-          "ingreso_solicitante"
-        ).value;
-        const elingresoCoSolicitante = document.getElementById(
-          "ingreso_co_solicitante"
-        ).value;
+        const elPlazo = document.getElementById("plazo");
+        const elMonto = document.getElementById("monto");
+        const elIngresoSol = document.getElementById("ingreso_solicitante");
+        const elIngresoCo = document.getElementById("ingreso_co_solicitante");
 
         // Validación simple de campos vacíos
         if (
-          !elHistorial.value ||
-          !elArea.value ||
-          !elCasado.value ||
-          !elAuto.value ||
-          !elEdu.value ||
-          !elGenero.value ||
-          elDep.value === "" ||
-          elplazo.value === "" ||
-          elmonto.value === "" ||
-          elingresoSolicitante.value === "" ||
-          elingresoCoSolicitante.value === ""
+          !elHistorial.value || !elArea.value || !elCasado.value ||
+          !elAuto.value || !elEdu.value || !elGenero.value ||
+          elDep.value === "" || elPlazo.value === "" || elMonto.value === "" ||
+          elIngresoSol.value === "" || elIngresoCo.value === ""
         ) {
-          alert(
-            "Por favor, complete todos los campos para realizar el cálculo."
-          );
+          alert("Por favor, complete todos los campos para realizar el cálculo.");
           return;
         }
 
+
         // Obtener valores numéricos
         const historialCredito = parseFloat(elHistorial.value);
-        const areaPropiedad = elArea.value;
+        const areaPropiedad = elArea.value; // Texto
         const casado = parseFloat(elCasado.value);
         const autoempleado = parseFloat(elAuto.value);
         const educacion = parseFloat(elEdu.value);
         const genero = parseFloat(elGenero.value);
         const dependientes = parseFloat(elDep.value);
-        const plazo = parseFloat(elplazo.value);
-        const monto = parseFloat(elmonto.value);
-        const ingresoSolicitante = parseFloat(elingresoSolicitante.value);
-        const ingresoCoSolicitante = parseFloat(elingresoCoSolicitante.value);
+        const plazo = parseFloat(elPlazo.value);
+        const monto = parseFloat(elMonto.value);
+        const ingresoSolicitante = parseFloat(elIngresoSol.value);
+        const ingresoCoSolicitante = parseFloat(elIngresoCo.value);
 
         // --- COEFICIENTES DEL MODELO---
         const INTERCEPTO = -1.5238;
+        
         const C_HISTORIAL = 3.4673;
-        const C_AREA_SEMIURBAN = 0.914;
+        const C_AREA_SEMIURBAN = 0.9140;
         const C_AREA_URBAN = 0.2388; // Rural es 0
         const C_CASADO = 0.6922;
         const C_AUTOEMPLEADO = -0.6195;
@@ -366,8 +360,9 @@
         const C_DEPENDIENTES = -0.0698;
         const C_PLAZO = -0.0034;
         const C_MONTO = -0.0009;
-        const C_INGRESO_SOL = 0.0; // Impacto casi nulo
-        const C_INGRESO_CO = -0.0001; // Impacto casi nulo
+        const C_INGRESO_SOL = 0.0000; 
+        const C_INGRESO_CO = -0.0001;
+
 
         let val_AreaSemiurban = areaPropiedad === "Semiurban" ? 1 : 0;
         let val_AreaUrban = areaPropiedad === "Urban" ? 1 : 0;
@@ -375,18 +370,19 @@
         // --- CÁLCULO DE Z ---
         let z =
           INTERCEPTO +
-          C_HISTORIAL * historialCredito +
-          C_AREA_SEMIURBAN * val_AreaSemiurban +
-          C_AREA_URBAN * val_AreaUrban +
-          C_CASADO * casado +
-          C_AUTOEMPLEADO * autoempleado +
-          C_EDUCACION * educacion +
-          C_GENERO * genero +
-          C_DEPENDIENTES * dependientes +
-          C_PLAZO * plazo +
-          C_MONTO * monto +
-          C_INGRESO_SOL * ingresoSolicitante +
-          C_INGRESO_CO * ingresoCoSolicitante;
+          (C_HISTORIAL * historialCredito) +
+          (C_AREA_SEMIURBAN * val_AreaSemiurban) +
+          (C_AREA_URBAN * val_AreaUrban) +
+          (C_CASADO * casado) +
+          (C_AUTOEMPLEADO * autoempleado) +
+          (C_EDUCACION * educacion) +
+          (C_GENERO * genero) +
+          (C_DEPENDIENTES * dependientes) +
+          (C_PLAZO * plazo) +
+          (C_MONTO * monto) +
+          (C_INGRESO_SOL * ingresoSolicitante) +
+          (C_INGRESO_CO * ingresoCoSolicitante);
+
 
         // --- FUNCIÓN DE PROBABILIDAD ---
         let probabilidad = 1 / (1 + Math.exp(-z));
@@ -413,9 +409,7 @@
 
         // Mostrar
         decisionTxt.innerText = texto;
-        probTxt.innerText = `Probabilidad de pago: ${(
-          probabilidad * 100
-        ).toFixed(2)}%`;
+        probTxt.innerText = `Probabilidad de aprobación: ${(probabilidad * 100).toFixed(2)}%`;
         iconRes.innerText = icono;
 
         resultDiv.className = clase;
